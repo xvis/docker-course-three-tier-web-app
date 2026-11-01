@@ -7,9 +7,16 @@ pipeline {
                     url: 'https://github.com/xvis/docker-course-three-tier-web-app.git'
             }
         }
-        stage('build') {
+        stage('check Docker version') {
             steps {
-                echo 'building code ..'
+                echo 'docker version'
+            }
+        }
+        stage('build API image'){
+            steps{
+                sh '''
+                docker build -t api:latest ./api
+                '''
             }
         }
         stage('test') {
