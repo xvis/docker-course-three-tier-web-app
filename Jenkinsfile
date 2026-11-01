@@ -19,6 +19,19 @@ pipeline {
                 '''
             }
         }
+        stage('build frontend image'){
+            steps{
+                sh '''
+                docker build -t FE:latest ./app
+                '''
+            }
+        }
+        stage('build database images'){
+            steps{
+                ''' docker build -t db:latest ./db
+                '''
+            }
+        }
         stage('test') {
             steps{
                 echo 'code test ho gaya'
