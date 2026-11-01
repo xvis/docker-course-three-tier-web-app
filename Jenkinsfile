@@ -22,7 +22,7 @@ pipeline {
         stage('build frontend image'){
             steps{
                 sh '''
-                'docker build -t FE:latest ./app'
+                'docker build -t app:latest ./app'
                 '''
             }
         }
