@@ -40,7 +40,17 @@ pipeline {
         }
         stage('Deployed'){
             steps{
-                echo 'code deployed ho gaya'
+                sh '''
+                docker login
+
+                docker tag api:latest xvishu/three-tier-api:latest
+                docker tag app:latest xvishu/three-tier-app:latest
+                docker tag db:latest xvishu/three-tier-db:latest
+
+                docker push xvishu/three-tier-api:latest
+                docker push xvishu/three-tier-app:latest
+                docker push xvishu/three-tier-db:latest
+                '''
             }
         }
     }
