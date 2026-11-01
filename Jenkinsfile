@@ -2,10 +2,6 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_CREDENTIALS = 'dockerhub-credentials'
-    }
-
     stages {
 
         // 1. Clone source code from GitHub
@@ -47,26 +43,7 @@ pipeline {
             }
         }
 
-        // 6. Docker Hub Login
-        stage('Docker Hub Login') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'DOCKERHUB_USER',
-                        passwordVariable: 'DOCKERHUB_TOKEN'
-                    )
-                ]) {
-                    sh '''
-                        set +x
-                        printf '%s' "$DOCKERHUB_TOKEN" | docker login \
-                            -u "$DOCKERHUB_USER" --password-stdin
-                    '''
-                }
-            }
-        }
-
-        // 7. Tag and Push all images
+        // 6. Tag and Push images to Docker Hub
         stage('Push Images to Docker Hub') {
             steps {
                 withCredentials([
@@ -78,22 +55,35 @@ pipeline {
                 ]) {
                     sh '''
                         set +x
+                        trap 'docker logout >/dev/null 2>&1 || true' EXIT
+
+                        echo "Logging into Docker Hub..."
+
+                        printf '%s' "$DOCKERHUB_TOKEN" | docker login \
+                            -u "$DOCKERHUB_USER" --password-stdin
+
+                        echo "Tagging images..."
 
                         docker tag api:latest "$DOCKERHUB_USER/three-tier-api:latest"
                         docker tag app:latest "$DOCKERHUB_USER/three-tier-app:latest"
                         docker tag db:latest "$DOCKERHUB_USER/three-tier-db:latest"
 
+                        echo "Pushing API image..."
                         docker push "$DOCKERHUB_USER/three-tier-api:latest"
+
+                        echo "Pushing APP image..."
                         docker push "$DOCKERHUB_USER/three-tier-app:latest"
+
+                        echo "Pushing DB image..."
                         docker push "$DOCKERHUB_USER/three-tier-db:latest"
 
-                        docker logout
+                        echo "All images pushed successfully!"
                     '''
                 }
             }
         }
 
-        // 8. Verify images
+        // 7. Verify Docker images
         stage('Verify Docker Images') {
             steps {
                 sh 'docker images'
