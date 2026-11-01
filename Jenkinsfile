@@ -22,14 +22,14 @@ pipeline {
         stage('build frontend image'){
             steps{
                 sh '''
-                'docker build -t app:latest ./app'
+                docker build -t app:latest ./app
                 '''
             }
         }
         stage('build database images'){
             steps{
                 sh '''
-                'docker build -t db:latest ./db'
+                docker build -t db:latest ./db
                 '''
             }
         }
